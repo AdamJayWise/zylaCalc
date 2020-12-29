@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+
+<head>
+    <style>
+        #cameraContainer {
+            display : flex;
+            flex-direction: row;
+        }
+        .cameraDiv {
+            min-width : 200px;
+            border : 1px solid gray;
+            padding : 2px;
+            margin : 2px;
+
+            display : flex;
+            flex-direction: column;
+        }
+
+        .timingMode {
+            border : 1px solid red;
+            padding : 2px;
+            margin : 2px;
+
+        }
+
+        .cameraHeading {
+            font-weight : bold;
+        }
+
+        .timingHeading {
+            font-weight : bold;
+            font-size : 10pt;
+        }
+
+    </style>
+</head>
+<body>
+    Zyla Timing Calculator
+    <div>
+        exposure time, sec:
+        <input id = "exposureTimeSec" value = "0.001">
+    </div>
+    <div id = "cameraContainer"></div>
+</body>
+
+<script src = "js/d3.min.js"></script>
+<script src = "js/timingInfo.js"></script>
+<script src = "js/cameraInfo.js"></script>
+<script src = "js/zylaCalc.js"></script>
