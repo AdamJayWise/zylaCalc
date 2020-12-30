@@ -8,23 +8,26 @@
         }
         .cameraDiv {
             min-width : 200px;
-            border : 1px solid gray;
             padding : 2px;
             margin : 2px;
 
             display : flex;
             flex-direction: column;
+            background-color: #eee;
         }
 
         .timingMode {
-            border : 1px solid red;
+            border : 1px solid gray;
             padding : 2px;
             margin : 2px;
-
+            height : 120px;
+            background-color: white;
         }
 
         .cameraHeading {
             font-weight : bold;
+            padding-left : 3px;
+
         }
 
         .timingHeading {
@@ -32,13 +35,52 @@
             font-size : 10pt;
         }
 
+        .inactiveMode {
+            color : #aaa;
+            font-style: italic;
+        }
+
+        .fixedGui {
+            position : fixed;
+            background-color: white;
+            width : 100%;
+            box-shadow: 3px 3px 5px;
+            padding : 2px;
+        }
+
+        .vertSpacer {
+            min-height : 30px;
+        }
+
+        .roiInput {
+            width : 50px;
+        }
+
+        .timeInput {
+            width : 80px;
+        }
+
     </style>
 </head>
 <body>
-    Zyla Timing Calculator
-    <div>
-        exposure time, sec:
-        <input id = "exposureTimeSec" value = "0.001">
+    
+    <div class = "fixedGui">
+        Zyla Timing Calculator - v0.01 -
+        Exposure Time, sec:
+        <input id = "exposureTimeSec" value = "0.010" class = "timeInput"> ,
+        ROI Columns
+        <input id = "roiColumns" value = "-" class = "roiInput">
+        ROI Rows,
+        <input id = "roiRows" value = "-" class = "roiInput">
+
+        Bit Depth
+        <select name="bitDepth" id="bitDepth">
+            <option value="12">12 Bit</option>
+            <option value="16">16 Bit</option>
+          </select>
+    </div>
+    <div class = "vertSpacer"> 
+
     </div>
     <div id = "cameraContainer"></div>
 </body>
