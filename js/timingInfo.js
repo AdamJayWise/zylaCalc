@@ -96,7 +96,7 @@ rollingShutterGlobalClearExternalExposureNonOverlap : {
                                                 globalClear : true,
                                             },
 
-globalShutterInternalTriggeringNonOverlap : {
+globalShutterInternalTriggeringNonOverlapShort : {
                                                 longName : "Global Shutter Internal Triggering (Non-Overlap) - Short Exposure",
                                                 shortName : "Global Shutter, Internal Trigger, Non-Overlap - Short",
                                                 exposureMin : "1row",
@@ -108,6 +108,16 @@ globalShutterInternalTriggeringNonOverlap : {
                                                 
                                             },
 
-
+globalShutterInternalTriggeringNonOverlapLong : {
+                                                longName : "Global Shutter Internal Triggering (Non-Overlap) - Long Exposure",
+                                                shortName : "Global Shutter, Internal Trigger, Non-Overlap - Long",
+                                                exposureMin : "1frame + 4rows",
+                                                exposureMax : "30sec", // fix me to support parsing negative numbers
+                                                cycleTimeMin : "1exposure + 1frame + 24rows",
+                                                cycleTimeMax : "20000sec",
+                                                startDelay : "0row", //?
+                                                globalShutter : true,
+                                                
+                                            },
 
 }
