@@ -1,8 +1,29 @@
+/**
+ * so to start I'd like to create an entry for each camera, showing each mode's acquisition
+ * it'd be nice to have them line up across models for comparison, not sure how to keep catagories registered
+ * other than using the paradigm i had for the other ones, e.g., loop through active cameras, and within that 
+ * loop through active modes
+*/
+
+/**
+ * the algorithm for checking framerate should work like this,
+ * 
+ * what do I want to do with the rolling shutter mode?  The framerate is supposed to be equal to the exposure
+ * time until long exposure hits
+ * so cycle time = exposure time until exposure time longer than readout
+ * 
+ * 12 and 16 bit are independant of readout rate
+ */
+
+
 console.log("zylaCalc.js 2020 Adam Wise");
 
 app = {
     exposureTimeSec : 0.001,
     debug : 0,
+    bitDepth : 12,
+    roiColumns : 0,
+    roiRows : 0,
 }
 
 // this is temporary to stash available timing modes and cameras
@@ -146,9 +167,33 @@ function populateTimingModeDivs(){
 
     timingModeDivs
         .append('div')
-        .text( (d,i,nodeList) => 'Frame Rate ' + r(10**6/(showCalculatedTime(d,i,nodeList, 'cycleTimeMin')),2) )
+        .text( (d,i,nodeList) => 'Frame Rate ' + calculateFrameRate(d,i,nodeList)) ;
 }
 populateTimingModeDivs();
+
+function calculateFrameRate(timingModeKey, i, nodeList, timeParam){
+    var cameraKey = d3.select(nodeList[i].parentElement.parentElement).data()[0];
+    var cam = cameraInfo[cameraKey];
+    var timingMode = timingModes[timingModeKey];
+
+    // check if min exposure is being violated
+    var minExposureSec = getCalculatedTime('exposureMin', timingMode, cam) / 10**6;
+    console.log(minExposureSec, 'min exposure')
+    if (app.exposureTimeSec < minExposureSec){
+        return 'Error - exposure time too short'
+    }
+
+
+    // if there is a floor for the cycle time, make sure calcualted cycle time is at or above it
+    var cycleTimeFloorUs = 0;
+    if (timingMode['cycleTimeFloor']){
+        cycleTimeFloorUs = getCalculatedTime('cycleTimeFloor', timingMode, cam)
+    }
+    console.log('cycletimefloor is', cycleTimeFloorUs)
+    var frameRateNaive = 10**6/( d3.max([getCalculatedTime('cycleTimeMin', timingMode, cam), cycleTimeFloorUs]));
+
+    return r( d3.min([frameRateNaive]) , 2);
+}
 
                         
 function showCalculatedTime(timingModeKey, i, nodeList, timeParam){
@@ -174,9 +219,5 @@ d3.select('#exposureTimeSec')
     })
 
 
-/**
- * so to start I'd like to create an entry for each camera, showing each mode's acquisition
- * it'd be nice to have them line up across models for comparison, not sure how to keep catagories registered
- * other than using the paradigm i had for the other ones, e.g., loop through active cameras, and within that 
- * loop through active modes
-*/
+
+    
