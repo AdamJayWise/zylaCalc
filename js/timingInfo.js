@@ -7,7 +7,7 @@ var timingModes = {
                                                     longName : "Rolling Shutter, Internal Triggering, Overlap Mode",
                                                     shortName : "Rolling, Internal, Overlap",
                                                     exposureMin : "1row",
-                                                    exposureMax : "1frame", // fix me to support parsing negative numbers
+                                                    exposureMax : "30sec", // fix me to support parsing negative numbers
                                                     cycleTimeMin : "1exp",
                                                     cycleTimeFloor : "1frame",
                                                     cycleTimeMax : "1frame + 1exposure + 1row",

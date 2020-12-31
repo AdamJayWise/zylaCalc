@@ -1,7 +1,7 @@
 var cameraInfo = {
 
     zyla55cl10 : {
-        displayName : "Zyla 5.5, CL10",
+        displayName : "Zyla 5.5<br>Camera Link",
         columns : 2560,
         rows : 2160,
         readOutRatesMHz : [200, 560],
@@ -14,7 +14,7 @@ var cameraInfo = {
     },
 
     zyla55usb : {
-        displayName : "Zyla 5.5, USB3",
+        displayName : "Zyla 5.5<br>USB 3.0",
         columns : 2560,
         rows : 2160,
         readOutRatesMHz : [200, 560],
@@ -28,7 +28,7 @@ var cameraInfo = {
     },
 
     zyla42cl10 : {
-        displayName : "Zyla 4.2 PLUS, CL10",
+        displayName : "Zyla 4.2 PLUS<br>Camera Link",
         columns : 2048,
         rows : 2048,
         readOutRatesMHz : [216, 540],
@@ -42,7 +42,7 @@ var cameraInfo = {
     },
 
     zyla42usb : {
-        displayName : "Zyla 4.2 PLUS, USB3",
+        displayName : "Zyla 4.2 PLUS<br>USB 3.0",
         columns : 2048,
         rows : 2048,
         readOutRatesMHz : [216, 540],

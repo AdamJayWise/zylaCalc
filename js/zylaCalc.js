@@ -265,6 +265,13 @@ function generateResultHTML(cameraKey, i, nodeList){
         return '<span style = "color:red">t<sub>exp</sub> < min<red>'
     }
 
+    // check if min exposure is being violated
+    var maxExposureSec = getCalculatedTime('exposureMax', timingMode, cam) / 10**6;
+    if (app.exposureTimeSec > maxExposureSec){
+        // can I set the parent div as inactive?
+        return '<span style = "color:red">t<sub>exp</sub> > max<red>'
+    }
+
     // check if requirement for global clear is being violated:
     if(timingMode['globalClear'] & !cam['globalClear']){
         //d3.select(nodeList[i].parentElement).classed('inactiveMode', true)
