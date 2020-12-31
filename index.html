@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 
 <head>
+
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
+
     <style>
+        
 
         body {
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: 'Open Sans', sans-serif;
         }
 
         #resultTable {
@@ -19,7 +23,7 @@
 
         .rowLabel {
             font-size : 8pt;
-            width : 120px;
+            min-width : 120px;
             font-weight : bold;
             background-color : #aaa;
             padding : 6px 4px 6px 2px;
@@ -27,11 +31,16 @@
         }
 
         .colHeading {
-            background-color : #ddd;
+            background-color : #aaa;
             font-size : 10pt;
             padding : 4px 6px 4px 6px;
             font-weight : bold;
             text-align : center;
+        }
+
+        .flag {
+            background-color : #aaa;
+            border-bottom : 1px solid black;
         }
         
         .inactiveMode {
@@ -66,13 +75,13 @@
 <body>
     
     <div class = "fixedGui">
-        Zyla Timing Calculator - v0.01 -
+        sCMOS Timings - v0.01 -
         Exposure Time, sec:
         <input id = "exposureTimeSec" value = "0.010" class = "timeInput"> ,
         ROI Columns
-        <input id = "roiColumns" value = "-" class = "roiInput">
-        ROI Rows,
-        <input id = "roiRows" value = "-" class = "roiInput">
+        <input id = "roiColumns" value = "-" class = "roiInput">,
+        ROI Rows
+        <input id = "roiRows" value = "-" class = "roiInput">,
 
         Bit Depth
         <select name="bitDepth" id="bitDepth">
@@ -81,7 +90,15 @@
           </select>
     </div>
     <div class = "vertSpacer"> </div>
-    <table id = "resultTable"></table>
+
+    <table id = "resultTable">
+        <tr>
+            <th class = "flag" colspan="5">
+                Frames Per Second (FPS) for Various Acquisition Modes
+            </th>
+        </tr>
+    </table>
+
     <div id = "cameraContainer"></div>
 </body>
 

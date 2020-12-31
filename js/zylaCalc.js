@@ -179,18 +179,20 @@ var timingModeDivs = d3.selectAll('.cameraDiv')
         .classed("timingHeading", true)
     */
 
+function formatTime(n){
+    if (n<1000){
+        return r(n,2) + ' us';
+    }
+    if (n < 100000){
+        return r(n/1000,2) + ' ms';
+    }
+
+    return r(n/(10**6),2) + ' sec';
+}
+
 function populateTimingModeDivs(){
 
-    function formatTime(n){
-        if (n<1000){
-            return r(n,3) + ' us';
-        }
-        if (n < 100000){
-            return r(n/1000,3) + ' ms';
-        }
-
-        return r(n/(10**6),3) + ' sec';
-    }
+    
 
     prettyLabelDict = {'exposureMin': 'Min. Exposure', 'exposureMax' : 'Max. Exposure'};
 
@@ -258,19 +260,6 @@ function generateResultHTML(cameraKey, i, nodeList){
     var cam = cameraInfo[cameraKey];
     var timingMode = timingModes[timingModeKey];
 
-    // check if min exposure is being violated
-    var minExposureSec = getCalculatedTime('exposureMin', timingMode, cam) / 10**6;
-    if (app.exposureTimeSec < minExposureSec){
-        // can I set the parent div as inactive?
-        return '<span style = "color:red">t<sub>exp</sub> < min<red>'
-    }
-
-    // check if min exposure is being violated
-    var maxExposureSec = getCalculatedTime('exposureMax', timingMode, cam) / 10**6;
-    if (app.exposureTimeSec > maxExposureSec){
-        // can I set the parent div as inactive?
-        return '<span style = "color:red">t<sub>exp</sub> > max<red>'
-    }
 
     // check if requirement for global clear is being violated:
     if(timingMode['globalClear'] & !cam['globalClear']){
@@ -285,6 +274,22 @@ function generateResultHTML(cameraKey, i, nodeList){
         //return '<span style = "color:black">Requires global shutter<red>'
         return '-'
     }
+
+    // check if min exposure is being violated
+    var minExposureUs = getCalculatedTime('exposureMin', timingMode, cam) ;
+    if (app.exposureTimeSec*10**6 < minExposureUs){
+        // can I set the parent div as inactive?
+        return '<span style = "font-size : 70%; color:red">t<sub>exp</sub> < ' + formatTime(minExposureUs) + '<red>'
+    }
+
+    // check if min exposure is being violated
+    var maxExposureUs = getCalculatedTime('exposureMax', timingMode, cam);
+    if (app.exposureTimeSec*10**6 > maxExposureUs){
+        // can I set the parent div as inactive?
+        return '<span style = "font-size : 70%; color:red">t<sub>exp</sub> > ' + formatTime(maxExposureUs) + '<red>'
+    }
+
+
 
 
     // if there is a floor for the cycle time, make sure calcualted cycle time is at or above it
