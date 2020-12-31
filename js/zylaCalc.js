@@ -135,8 +135,26 @@ function testParseTimings(cam, timingMode){
 
 testParseTimings(cameraInfo["zyla55usb"], timingModes["rollingShutterInternalTriggeringNonOverlap"]);
 
+/*
+var headingColDiv = d3.select('#cameraContainer')
+                    .append("div")
+                    .classed("timingModeLabelCol", true)
+                    
+headingColDiv.append('span')
+        .text("Mode")
+        .classed("cameraHeading", true)
+
+headingColDiv.selectAll('.timingModeLabel')
+                    .data(app.activeTimingModes)
+                    .enter()
+                    .append('div')
+                    .classed("timingModeLabel", true)
+                    .append("div")
+                    .text(d=>timingModes[d]['longName'])
+                    .classed("timingModeLabelContents", true)
+
 var cameraDivs = d3.select('#cameraContainer')
-                    .selectAll('div')
+                    .selectAll('div.cameraDiv')
                     .data(app.activeCameras)
                     .enter()
                     .append('div')
@@ -154,10 +172,12 @@ var timingModeDivs = d3.selectAll('.cameraDiv')
                         .enter()
                         .append('div')
                         .classed("timingMode", true)
-timingModeDivs
+/*
+    timingModeDivs
         .append('span')
         .text(d=>timingModes[d].longName)
         .classed("timingHeading", true)
+    */
 
 function populateTimingModeDivs(){
 
@@ -185,10 +205,56 @@ function populateTimingModeDivs(){
         .append('div')
         .html( (d,i,nodeList) => 'Frame Rate, fps: ' + calculateFrameRate(d,i,nodeList))  ;
 }
-populateTimingModeDivs();
+//populateTimingModeDivs();
 
-function calculateFrameRate(timingModeKey, i, nodeList, timeParam){
-    var cameraKey = d3.select(nodeList[i].parentElement.parentElement).data()[0];
+// I want to redo this such that I first create a json object organizing the relevant data, then 
+// building the table using simple d3... so loop through timing modes and create an entry for each camera's fps and whatever else
+// So i'll loop through the entries in timingModes, using the timingModes key as the result key, with an oobje
+var timingResults = {};
+
+var headingRow = d3.select("#resultTable")
+                    .append("tr")
+                    .selectAll(".colHeading")
+                    .data([{displayName:''}].concat(Object.keys(cameraInfo)))
+                    .enter()
+                    .append("td")
+                    .classed("colHeading", true)
+                    .html(function(d){
+                        try {return cameraInfo[d].displayName}
+                        catch(err) {return ''}
+
+                    })
+
+var resultRows = d3.select("#resultTable")
+                    .selectAll(".timingModeRow")
+                    .data(Object.keys(timingModes))
+                    .enter()
+                    .append("tr")
+                    .classed("timingModeRow", true);
+
+var labelCol = resultRows
+                    .each(function(d,i,nodes){
+                        console.log(d)
+                        d3.select(nodes[i])
+                            .append("td")
+                            .classed("rowLabel", true)
+                            .text(timingModes[d].longName)
+                    })
+
+var resultCells = resultRows
+                    .selectAll(".resultCell")
+                    .data(Object.keys(cameraInfo))
+                    .enter()
+                    .append("td")
+                    .classed("resultCell", true)
+                    .html((d,i,nodeList)=>generateResultHTML(d,i,nodeList))
+
+function updateCells(){
+    resultCells.html((d,i,nodeList)=>generateResultHTML(d,i,nodeList));
+}
+
+function generateResultHTML(cameraKey, i, nodeList){
+    var timingModeKey = d3.select(nodeList[i].parentElement).data()[0];
     var cam = cameraInfo[cameraKey];
     var timingMode = timingModes[timingModeKey];
 
@@ -196,19 +262,21 @@ function calculateFrameRate(timingModeKey, i, nodeList, timeParam){
     var minExposureSec = getCalculatedTime('exposureMin', timingMode, cam) / 10**6;
     if (app.exposureTimeSec < minExposureSec){
         // can I set the parent div as inactive?
-        return '<span style = "color:red">Error - Exposure time too short<red>'
+        return '<span style = "color:red">t<sub>exp</sub> < min<red>'
     }
 
     // check if requirement for global clear is being violated:
     if(timingMode['globalClear'] & !cam['globalClear']){
-        d3.select(nodeList[i].parentElement).classed('inactiveMode', true)
-        return '<span style = "color:black">Requires global clear<red>'
+        //d3.select(nodeList[i].parentElement).classed('inactiveMode', true)
+        //return '<span style = "color:black">Requires global clear<red>'
+        return '-'
     }
 
     // check if requirement for global shutter is being violated:
     if(timingMode['globalShutter'] & !cam['hasGlobalShutter']){
-        d3.select(nodeList[i].parentElement).classed('inactiveMode', true)
-        return '<span style = "color:black">Requires global shutter<red>'
+        //d3.select(nodeList[i].parentElement).classed('inactiveMode', true)
+        //return '<span style = "color:black">Requires global shutter<red>'
+        return '-'
     }
 
 
@@ -230,10 +298,14 @@ function calculateFrameRate(timingModeKey, i, nodeList, timeParam){
     }
 
     var bandWidthBitsPerSecond = {'usb3':2654.208*10**6, 'cl10' : 6637.486*10**6}[cam['interface']];
-    console.log('roi rows are', roiRows, 'roi columns are', roiColumns, 'bandwidth is', bandWidthBitsPerSecond)
+    if(app.debug){
+        console.log('roi rows are', roiRows, 'roi columns are', roiColumns, 'bandwidth is', bandWidthBitsPerSecond);
+    }
 
     var bandWidthLimitedFrameRate = bandWidthBitsPerSecond / (roiColumns * roiRows * app.bitDepth);
-    console.log(timingMode.shortName, 'bwlimit', cam.displayName, bandWidthLimitedFrameRate, 'datalimit', cam.displayName, frameRateNaive)
+    if(app.debug){
+        console.log(timingMode.shortName, 'bwlimit', cam.displayName, bandWidthLimitedFrameRate, 'datalimit', cam.displayName, frameRateNaive)
+    }
     return r( d3.min([frameRateNaive, bandWidthLimitedFrameRate]) , 2);
 }
 
@@ -256,33 +328,29 @@ function showCalculatedTime(timingModeKey, i, nodeList, timeParam){
 d3.select('#exposureTimeSec')
     .on('input', function(){
         app.exposureTimeSec = Number(this.value);
-        timingModeDivs.selectAll('div').remove();   
-        populateTimingModeDivs();
+        updateCells();
     })
 
 //callback for roi row input
 d3.select('#roiRows')
     .on('change', function(){
         app['roiRows'] = Math.min(2048, Math.max(8,Number(this.value)));
-        this.value = app['roiRows']
-        timingModeDivs.selectAll('div').remove();   
-        populateTimingModeDivs();
+        this.value = app['roiRows'];
+        updateCells();
     })
 
 //callback for roi column input
 d3.select('#roiColumns')
     .on('change', function(){
         app['roiColumns'] = Math.min(2048, Math.max(8,Number(this.value)));
-        this.value = app['roiColumns']
-        timingModeDivs.selectAll('div').remove();   
-        populateTimingModeDivs();
+        this.value = app['roiColumns'];
+        updateCells();
     })
 
 // callback for bit depth input
 d3.select('#bitDepth')
     .on('change', function(){
         app['bitDepth'] = Number(this.value);
-        timingModeDivs.selectAll('div').remove();   
-        populateTimingModeDivs();
+        updateCells();
     })
     

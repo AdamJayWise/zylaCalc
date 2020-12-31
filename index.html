@@ -2,39 +2,36 @@
 
 <head>
     <style>
-        #cameraContainer {
-            display : flex;
-            flex-direction: row;
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
         }
-        .cameraDiv {
-            min-width : 200px;
+
+        #resultTable {
+            border-collapse: collapse;
+        }
+
+        .resultCell {
+            border : 1px solid black;
+            text-align : center;
             padding : 2px;
-            margin : 2px;
-
-            display : flex;
-            flex-direction: column;
-            background-color: #eee;
         }
 
-        .timingMode {
-            border : 1px solid gray;
-            padding : 2px;
-            margin : 2px;
-            height : 120px;
-            background-color: white;
-        }
-
-        .cameraHeading {
+        .rowLabel {
+            font-size : 8pt;
+            width : 120px;
             font-weight : bold;
-            padding-left : 3px;
-
+            background-color : #aaa;
+            padding : 6px 4px 6px 2px;
+            text-align : right;
         }
 
-        .timingHeading {
-            font-weight : bold;
+        .colHeading {
+            background-color : #ddd;
             font-size : 10pt;
+            padding : 4px 6px 4px 6px;
         }
-
+        
         .inactiveMode {
             color : #aaa;
             font-style: italic;
@@ -60,6 +57,8 @@
             width : 80px;
         }
 
+        
+
     </style>
 </head>
 <body>
@@ -79,9 +78,8 @@
             <option value="16">16 Bit</option>
           </select>
     </div>
-    <div class = "vertSpacer"> 
-
-    </div>
+    <div class = "vertSpacer"> </div>
+    <table id = "resultTable"></table>
     <div id = "cameraContainer"></div>
 </body>
 
