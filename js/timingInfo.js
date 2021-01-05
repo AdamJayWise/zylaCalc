@@ -1,7 +1,7 @@
 // info on how to lay out timing of different acquisition 
 // time is in microseconds
 
-var timingModes = {
+var timingModesZyla = {
 
     rollingShutterInternalTriggeringOverlap : {
                                                     longName : "Rolling Shutter, Internal Trigger, (Overlap Mode)",

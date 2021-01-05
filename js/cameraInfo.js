@@ -11,6 +11,7 @@ var cameraInfo = {
         hasGlobalShutter : true,
         globalClear : false,
         interface : "cl10",
+        timingType : 'zyla',
     },
 
     zyla55usb : {
@@ -24,6 +25,8 @@ var cameraInfo = {
         hasGlobalShutter : true,
         globalClear : false,
         interface : "usb3",
+        timingType : 'zyla',
+
 
     },
 
@@ -38,6 +41,8 @@ var cameraInfo = {
         hasGlobalShutter : false,
         globalClear : true,
         interface : "cl10",
+        timingType : 'zyla',
+
 
     },
 
@@ -52,6 +57,8 @@ var cameraInfo = {
         hasGlobalShutter : false,
         globalClear : true,
         interface : "usb3",
+        timingType : 'zyla',
+
 
     },
 }
