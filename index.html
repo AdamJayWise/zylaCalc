@@ -76,7 +76,7 @@
     
     <div class = "fixedGui">
         Exposure Time, sec:
-        <input id = "exposureTimeSec" value = "0.010" class = "timeInput"> ,
+        <input id = "exposureTimeSec" value = "0.00001" class = "timeInput"> ,
         ROI Columns
         <input id = "roiColumns" value = "-" class = "roiInput">,
         ROI Rows
@@ -86,7 +86,11 @@
         <select name="bitDepth" id="bitDepth">
             <option value="12">12 Bit</option>
             <option value="16">16 Bit</option>
-          </select>
+          </select>, 
+
+          Use Min. Exposure
+          <input type="checkbox" id = "minExpCheckBox"> 
+            </select>
     </div>
     <div class = "vertSpacer"> </div>
 

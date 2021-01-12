@@ -11,11 +11,12 @@ re-write how the timing rules work to allow for different rules with different c
 console.log("zylaCalc.js 2020 Adam Wise");
 
 app = {
-    exposureTimeSec : 0.01,
+    exposureTimeSec : 0.00001,
     debug : 0,
     bitDepth : 12,
     roiColumns : 0,
     roiRows : 0,
+    useMinExposure : false,
 }
 
 // this is temporary to stash available timing modes and cameras
@@ -211,7 +212,7 @@ function generateResultHTML(cameraKey, i, nodeList){
 
 
     // check if requirement for global clear is being violated:
-    if(timingMode['globalClear'] & !cam['globalClear']){
+    if(timingMode['globalClear'] & !cam['globalClear'] ){
         //d3.select(nodeList[i].parentElement).classed('inactiveMode', true)
         //return '<span style = "color:black">Requires global clear<red>'
         return '-'
@@ -226,19 +227,24 @@ function generateResultHTML(cameraKey, i, nodeList){
 
     // check if min exposure is being violated
     var minExposureUs = getCalculatedTime('exposureMin', timingMode, cam) ;
-    if (app.exposureTimeSec*10**6 < minExposureUs){
+    if ( (app.exposureTimeSec*10**6 < minExposureUs) & !app.useMinExposure){
         // can I set the parent div as inactive?
         return '<span style = "font-size : 70%; color:red">t<sub>exp</sub> < ' + formatTime(minExposureUs) + '<red>'
     }
 
     // check if min exposure is being violated
     var maxExposureUs = getCalculatedTime('exposureMax', timingMode, cam);
-    if (app.exposureTimeSec*10**6 > maxExposureUs){
+    if ( (app.exposureTimeSec*10**6 > maxExposureUs) & !app.useMinExposure){
         // can I set the parent div as inactive?
         return '<span style = "font-size : 70%; color:red">t<sub>exp</sub> > ' + formatTime(maxExposureUs) + '<red>'
     }
 
-    return findFrameRate(cam, timingMode)
+    var newParams = Object.assign({}, app);
+    if(app.useMinExposure){
+        params.exposureTimeSec = minExposureUs / 10**6;
+    }
+
+    return r(findFrameRate(cam, timingMode, params = newParams),1)
 }
 
                     
@@ -271,6 +277,15 @@ d3.select('#bitDepth')
     .on('change', function(){
         app['bitDepth'] = Number(this.value);
         updateCells();
+    })
+
+// callback for min exposure input
+d3.select("#minExpCheckBox").
+    on("change", function(){
+        d3.select("#exposureTimeSec").property("disabled",this.checked)
+        app['useMinExposure'] = this.checked;
+        updateCells();
+
     })
     
 ///////////////////// End of GUI Code /////////////////////////

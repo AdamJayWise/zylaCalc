@@ -23,6 +23,17 @@ tests.push({
     cam : cameraInfo['zyla55cl10'],
     timingMode : timingModesZyla['rollingShutterInternalTriggeringOverlap'],
     testParams : {
+                    targetFrameRate : 75,
+                    bitDepth : 16,
+                    exposureTimeSec : 1e-4,
+                    debug : false,
+                }
+})
+
+tests.push({
+    cam : cameraInfo['zyla55cl10'],
+    timingMode : timingModesZyla['rollingShutterInternalTriggeringOverlap'],
+    testParams : {
                     targetFrameRate : 1691,
                     bitDepth : 12,
                     exposureTimeSec : 1e-4,
@@ -123,6 +134,6 @@ tests.push({
                 }
 })
 
-
+console.log("Manually Entered Tests");
 tests.forEach(n=>doTest(n))
 
