@@ -82,11 +82,17 @@
         ROI Rows
         <input id = "roiRows" value = "-" class = "roiInput">,
 
-        Bit Depth
+                Bit Depth
         <select name="bitDepth" id="bitDepth">
             <option value="12">12 Bit</option>
             <option value="16">16 Bit</option>
-          </select>
+          </select>,
+
+          Use Min. Exposure
+          <input type="checkbox" id = "minExpCheckBox"> 
+            </select>
+          
+
     </div>
     <div class = "vertSpacer"> </div>
 
@@ -98,10 +104,10 @@
         </tr>
     </table>
 
-sCMOS Timings v0.02 - Adam Wise - 2020
+sCMOS Timings v0.02 - Adam Wise - 2022
 </body>
 
 <script src = "js/d3.min.js"></script>
 <script src = "js/timingInfo.js"></script>
 <script src = "js/cameraInfo.js"></script>
-<script src = "js/zylaCalc.js"></script>
+<script src = "js/sonaCalc.js"></script>

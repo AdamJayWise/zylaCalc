@@ -1,26 +1,26 @@
 /**
- * so to start I'd like to create an entry for each camera, showing each mode's acquisition
- * it'd be nice to have them line up across models for comparison, not sure how to keep catagories registered
- * other than using the paradigm i had for the other ones, e.g., loop through active cameras, and within that 
- * loop through active modes
-*/
-
-/**
- * the algorithm for checking framerate should work like this,
+ * so for the sona, what's up 
  * 
- * what do I want to do with the rolling shutter mode?  The framerate is supposed to be equal to the exposure
- * time until long exposure hits
- * so cycle time = exposure time until exposure time longer than readout
+ * there are two models, the b11 and b66 variants
+ * there are two version of the b6 model, cxp and usb
  * 
- * 12 and 16 bit are independant of readout rate
+ * for the b6, how many "modes" are there?
+ * for the b11 how many "modes" are there?
  * 
- * so what I'm about to do is modify this thing such that frame becomes roiRows*rowTime
- * that will be the naive estimate
+ * In the zyla calculator, I had one entry for each camera variant,
+ * e.g., zyla 4.2 usb, zyla 5.5 cameralink, zyla 5.5 usb and so on
+ * and then an entry for ROI and bit depth
+ * 4.2b6 has 16-bit and 12-bit low noise
+ * 4.2b11 has 16 bit and 12 bit modes... not that different
+ * 
+ * so now I remember the issue was that the different cameras have different timing info
+ * even in the same acquisition mode - e.g., rolling shutter internal trigger on sona 11 min exp = 1 row, 4 rows on b6
+ * SO i need to refactor it such that there is more than one timing info object avaiable.
  * 
  */
 
 
-console.log("zylaCalc.js 2020 Adam Wise");
+console.log("sonaCalc.js 2022 Adam Wise");
 
 app = {
     exposureTimeSec : 0.01,
@@ -28,10 +28,11 @@ app = {
     bitDepth : 12,
     roiColumns : 0,
     roiRows : 0,
+    useMinExposure : false,
 }
 
 // this is temporary to stash available timing modes and cameras
-app.availableTimingModes = Object.keys(timingModes);
+app.availableTimingModes = Object.keys(timingModes['sona6']);
 app.availableCameras = Object.keys(cameraInfo);
 
 app.activeTimingModes = app.availableTimingModes;
@@ -78,17 +79,18 @@ function parseTimingString(timeString){
     return {rows : numRows, frames : numFrames, exposures : numExposures, microseconds : numSeconds * 10**6};
 }
 
-function getCalculatedTime(timingParam, timingModeObj, cameraObj){
+/// ugh what does this functione even do - it returns parameterval which is 
+function getCalculatedTime(timingParam, timingModeObj, cameraObj, params = app){
     var timeVals = parseTimingString(timingModeObj[timingParam]);
-    var currentReadout =  cameraObj["readOutRatesMHz"][1];
+    
     
     // if no roi is being used:
-    if (!app.roiRows){
-        var parameterVal = (timeVals["rows"] * cameraObj["rowTimeUs"][currentReadout]) + (timeVals["frames"] * cameraObj["frameTimeUs"][currentReadout]) + (timeVals['microseconds']) + (timeVals['exposures'] * app.exposureTimeSec * 10**6);
+    if (!params.roiRows){
+        var parameterVal = (timeVals["rows"] * cameraObj["rowTimeUs"][params.bitDepth]) + (timeVals["frames"] * cameraObj["frameTimeUs"][params.bitDepth]) + (timeVals['microseconds']) + (timeVals['exposures'] * params.exposureTimeSec * 10**6);
     }
-    // if no roi is being used:
-    if (app.roiRows){
-        var parameterVal = (timeVals["rows"] * cameraObj["rowTimeUs"][currentReadout]) + (timeVals["frames"] * app.roiRows * cameraObj["rowTimeUs"][currentReadout] / 2) + (timeVals['microseconds']) + (timeVals['exposures'] * app.exposureTimeSec * 10**6);
+    // if roi *is* being used:
+    if (params.roiRows){
+        var parameterVal = (timeVals["rows"] * cameraObj["rowTimeUs"][params.bitDepth]) + (timeVals["frames"] * params.roiRows * cameraObj["rowTimeUs"][params.bitDepth]) + (timeVals['microseconds']) + (timeVals['exposures'] * params.exposureTimeSec * 10**6);
     }
 
 
@@ -97,43 +99,6 @@ function getCalculatedTime(timingParam, timingModeObj, cameraObj){
 /**
  * Test out parsing stored timing info in the timingModes object
  */
-function testParseTimings(cam, timingMode){
-    //console.log("camera is: ", cam);
-    //console.log("timing mode is: ", timingMode)
-
-    // parse exposure minimum
-    
-
-
-    console.log("Camera is:", cam['displayName']);
-    console.log("Timing Mode is:", timingMode['longName']);
-    var currentReadout = cam["readOutRatesMHz"][0];
-    console.log("current readout rate is ", currentReadout);
-    
-
-    function checkTiming(timingParam){
-        var timeVals = parseTimingString(timingMode[timingParam]);
-        var parameterVal = timeVals["rows"] * cam["rowTimeUs"][currentReadout] + timeVals["frames"] * cam["frameTimeUs"][currentReadout] + timeVals['microseconds'];
-        
-        if (parameterVal < 1000){
-            console.log(timingParam, "is : ",parameterVal,"us")
-        }
-
-        if ( (parameterVal >= 1000) && (parameterVal < 100000)){
-            console.log(timingParam, "is : ",parameterVal / 1000,"ms")
-        }
-
-        if (parameterVal > 100000) {
-            console.log(timingParam, "is : ",parameterVal/(10**6),"s")
-        }
-    }
-
-    ['exposureMin','exposureMax','cycleTimeMin', 'cycleTimeMax', 'startDelay'].forEach(d=>checkTiming(d))
-
-
-}
-
-testParseTimings(cameraInfo["zyla55usb"], timingModes["rollingShutterInternalTriggeringNonOverlap"]);
 
 /*
 var headingColDiv = d3.select('#cameraContainer')
@@ -229,7 +194,7 @@ var headingRow = d3.select("#resultTable")
 
 var resultRows = d3.select("#resultTable")
                     .selectAll(".timingModeRow")
-                    .data(Object.keys(timingModes))
+                    .data(Object.keys(timingModes['sona6']))
                     .enter()
                     .append("tr")
                     .classed("timingModeRow", true);
@@ -240,7 +205,7 @@ var labelCol = resultRows
                         d3.select(nodes[i])
                             .append("td")
                             .classed("rowLabel", true)
-                            .text(timingModes[d].longName)
+                            .text(timingModes['sona6'][d].longName)
                     })
 
 var resultCells = resultRows
@@ -256,13 +221,15 @@ function updateCells(){
 }
 
 function generateResultHTML(cameraKey, i, nodeList){
+    
     var timingModeKey = d3.select(nodeList[i].parentElement).data()[0];
     var cam = cameraInfo[cameraKey];
-    var timingMode = timingModes[timingModeKey];
+    // estable camera, timing mode, parameters
+    var timingMode = timingModes[cam.timings][timingModeKey];
 
 
     // check if requirement for global clear is being violated:
-    if(timingMode['globalClear'] & !cam['globalClear']){
+    if(timingMode['globalClear'] & !cam['globalClear'] ){
         //d3.select(nodeList[i].parentElement).classed('inactiveMode', true)
         //return '<span style = "color:black">Requires global clear<red>'
         return '-'
@@ -277,48 +244,24 @@ function generateResultHTML(cameraKey, i, nodeList){
 
     // check if min exposure is being violated
     var minExposureUs = getCalculatedTime('exposureMin', timingMode, cam) ;
-    if (app.exposureTimeSec*10**6 < minExposureUs){
+    if ( (app.exposureTimeSec*10**6 < minExposureUs) & !app.useMinExposure){
         // can I set the parent div as inactive?
         return '<span style = "font-size : 70%; color:red">t<sub>exp</sub> < ' + formatTime(minExposureUs) + '<red>'
     }
 
     // check if min exposure is being violated
     var maxExposureUs = getCalculatedTime('exposureMax', timingMode, cam);
-    if (app.exposureTimeSec*10**6 > maxExposureUs){
+    if ( (app.exposureTimeSec*10**6 > maxExposureUs) & !app.useMinExposure){
         // can I set the parent div as inactive?
         return '<span style = "font-size : 70%; color:red">t<sub>exp</sub> > ' + formatTime(maxExposureUs) + '<red>'
     }
 
-
-
-
-    // if there is a floor for the cycle time, make sure calcualted cycle time is at or above it
-    var cycleTimeFloorUs = 0;
-    if (timingMode['cycleTimeFloor']){
-        cycleTimeFloorUs = getCalculatedTime('cycleTimeFloor', timingMode, cam)
-    }
-    
-    var frameRateNaive = 10**6/( d3.max([getCalculatedTime('cycleTimeMin', timingMode, cam), cycleTimeFloorUs]));
-
-    var roiRows = cam['rows'];
-    if (app.roiRows){
-        roiRows = app.roiRows;
-    }
-    var roiColumns = cam['columns'];
-    if (app.roiColumns){
-        roiColumns = app.roiColumns;
+    var newParams = Object.assign({}, app);
+    if(app.useMinExposure){
+        newParams.exposureTimeSec = minExposureUs / 10**6;
     }
 
-    var bandWidthBitsPerSecond = {'usb3':2654.208*10**6, 'cl10' : 6637.486*10**6}[cam['interface']];
-    if(app.debug){
-        console.log('roi rows are', roiRows, 'roi columns are', roiColumns, 'bandwidth is', bandWidthBitsPerSecond);
-    }
-
-    var bandWidthLimitedFrameRate = bandWidthBitsPerSecond / (roiColumns * roiRows * app.bitDepth);
-    if(app.debug){
-        console.log(timingMode.shortName, 'bwlimit', cam.displayName, bandWidthLimitedFrameRate, 'datalimit', cam.displayName, frameRateNaive)
-    }
-    return r( d3.min([frameRateNaive, bandWidthLimitedFrameRate]) , 2);
+    return r(findFrameRate(cam, timingMode, params = newParams),1)
 }
 
                         
@@ -334,7 +277,41 @@ function showCalculatedTime(timingModeKey, i, nodeList, timeParam){
     var timeUs = getCalculatedTime(timeParam, timingMode, cam);
 
     return timeUs;
-}        
+}   
+
+function findFrameRate(cam, timingMode, params = app){
+    // function to find the frame rate in fps given a camera object and timingmode object
+    if (app.debug){
+        console.log(params);
+    }
+    // if there is a floor for the cycle time, make sure calcualted cycle time is at or above it
+    var cycleTimeFloorUs = 0;
+    if (timingMode['cycleTimeFloor']){
+        cycleTimeFloorUs = getCalculatedTime('cycleTimeFloor', timingMode, cam, params = params)
+    }
+    
+    var frameRateNaive = 10**6/( d3.max([getCalculatedTime('cycleTimeMin', timingMode, cam, params = params), cycleTimeFloorUs]));
+
+    var roiRows = cam['rows'];
+    if (params.roiRows){
+        roiRows = params.roiRows;
+    }
+    var roiColumns = cam['columns'];
+    if (params.roiColumns){
+        roiColumns = params.roiColumns;
+    }
+
+    var bandWidthBitsPerSecond = {'usb3':1*2654.208*10**6, 'cxp' : 6637.486*10**6}[cam['interface']];
+    if(params.debug){
+        console.log('roi rows are', roiRows, 'roi columns are', roiColumns, 'bandwidth is', bandWidthBitsPerSecond);
+    }
+
+    var bandWidthLimitedFrameRate = bandWidthBitsPerSecond / (roiColumns * roiRows * params.bitDepth);
+    if(params.debug){
+        console.log(timingMode.shortName, 'bwlimit', cam.displayName, bandWidthLimitedFrameRate, 'datalimit', cam.displayName, frameRateNaive)
+    }
+    return r( d3.min([frameRateNaive, bandWidthLimitedFrameRate]) , 2);
+}
 
 // callback for exposure time input
 d3.select('#exposureTimeSec')
@@ -366,3 +343,12 @@ d3.select('#bitDepth')
         updateCells();
     })
     
+// callback for min exposure input
+d3.select("#minExpCheckBox").
+    on("change", function(){
+        d3.select("#exposureTimeSec").property("disabled",this.checked)
+        app['useMinExposure'] = this.checked;
+        //console.log(app)
+        updateCells();
+
+    })
